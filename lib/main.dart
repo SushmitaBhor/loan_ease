@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loan_ease/features/auth/presentation/pages/splash_page.dart';
 import 'core/di/injection.dart';
 import 'core/theme/app_theme.dart';
 
@@ -19,7 +20,7 @@ class LoanEaseApp extends StatelessWidget {
       title: 'LoanEase',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const PlaceholderScreen(),
+      home: const SplashPage(),
     );
   }
 }
