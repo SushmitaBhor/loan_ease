@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loan_ease/features/auth/presentation/pages/login_page.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -37,9 +38,9 @@ class _SplashPageState extends State<SplashPage>
     // Navigate after animation
     Future.delayed(const Duration(seconds: 2), () {
       // TODO: Replace with Auth check
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const PlaceholderNextScreen()),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage()));
     });
   }
 
