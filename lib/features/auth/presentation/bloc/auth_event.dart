@@ -5,12 +5,15 @@ class SendOtp extends AuthEvent {
   SendOtp(this.phone);
 }
 
+class ResendOtp extends AuthEvent {
+  final String phone;
+  ResendOtp(this.phone);
+}
+
 class VerifyOtp extends AuthEvent {
   final String otp;
   VerifyOtp(this.otp);
 }
 
-class ResendOtp extends AuthEvent {
-  final String phone;
-  ResendOtp(this.phone);
-}
+// ✅ ADD THIS
+class CheckSession extends AuthEvent {}

@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loan_ease/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:loan_ease/features/auth/presentation/bloc/auth_state.dart';
+import 'package:loan_ease/features/auth/presentation/pages/dashboard_page.dart';
 import 'package:loan_ease/features/auth/presentation/pages/login_page.dart';
 
 class SplashPage extends StatefulWidget {
@@ -52,22 +56,39 @@ class _SplashPageState extends State<SplashPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: ScaleTransition(
-            scale: _scaleAnimation,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(Icons.account_balance, size: 80, color: Colors.indigo),
-                SizedBox(height: 16),
-                Text(
-                  'LoanEase',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                ),
-              ],
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is Authenticated) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const DashboardPage()),
+          );
+        }
+
+        if (state is Unauthenticated) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginPage()),
+          );
+        }
+      },
+      child: Scaffold(
+        body: Center(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: ScaleTransition(
+              scale: _scaleAnimation,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.account_balance, size: 80, color: Colors.indigo),
+                  SizedBox(height: 16),
+                  Text(
+                    'LoanEase',
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
