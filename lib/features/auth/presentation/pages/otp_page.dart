@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loan_ease/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:loan_ease/features/auth/presentation/bloc/auth_event.dart';
 import 'package:loan_ease/features/auth/presentation/bloc/auth_state.dart';
-import 'package:loan_ease/features/auth/presentation/pages/dashbard_page.dart';
+import 'package:loan_ease/features/auth/presentation/pages/dashboard_page.dart';
 
 class OtpPage extends StatefulWidget {
   final String phone;
