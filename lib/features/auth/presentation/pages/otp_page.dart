@@ -1,5 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loan_ease/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:loan_ease/features/auth/presentation/bloc/auth_event.dart';
+import 'package:loan_ease/features/auth/presentation/bloc/auth_state.dart';
+import 'package:loan_ease/features/auth/presentation/pages/dashbard_page.dart';
 
 class OtpPage extends StatefulWidget {
   final String phone;
@@ -10,37 +15,48 @@ class OtpPage extends StatefulWidget {
 }
 
 class _OtpPageState extends State<OtpPage> {
-  final List<TextEditingController> _controllers = List.generate(
+  final List<TextEditingController> controllers = List.generate(
     6,
     (_) => TextEditingController(),
   );
 
-  int _seconds = 30;
-  Timer? _timer;
+  final List<FocusNode> focusNodes = List.generate(6, (_) => FocusNode());
+
+  int secondsLeft = 30;
+  Timer? timer;
 
   @override
   void initState() {
     super.initState();
-    _startTimer();
+    startTimer();
+
+    // Auto-focus first OTP box
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      focusNodes[0].requestFocus();
+    });
   }
 
-  void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_seconds == 0) {
-        timer.cancel();
+  void startTimer() {
+    timer?.cancel();
+    setState(() => secondsLeft = 30);
+
+    timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (secondsLeft == 0) {
+        t.cancel();
       } else {
-        setState(() => _seconds--);
+        setState(() => secondsLeft--);
       }
     });
   }
 
-  bool get _isOtpComplete => _controllers.every((c) => c.text.isNotEmpty);
-
   @override
   void dispose() {
-    _timer?.cancel();
-    for (final c in _controllers) {
+    timer?.cancel();
+    for (final c in controllers) {
       c.dispose();
+    }
+    for (final f in focusNodes) {
+      f.dispose();
     }
     super.dispose();
   }
@@ -51,77 +67,91 @@ class _OtpPageState extends State<OtpPage> {
       appBar: AppBar(title: const Text('Verify OTP')),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const SizedBox(height: 30),
-            Text('OTP sent to +91 ${widget.phone}'),
-            const SizedBox(height: 30),
+        child: BlocConsumer<AuthBloc, AuthState>(
+          listener: (context, state) {
+            if (state is Authenticated) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const DashboardPage()),
+              );
+            }
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(6, (index) {
-                return SizedBox(
-                  width: 45,
-                  child: TextField(
-                    controller: _controllers[index],
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    maxLength: 1,
-                    decoration: const InputDecoration(counterText: ''),
-                    onChanged: (value) {
-                      if (value.isNotEmpty && index < 5) {
-                        FocusScope.of(context).nextFocus();
-                      }
-                    },
-                  ),
-                );
-              }),
-            ),
+            if (state is AuthError) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(state.message)));
+            }
+          },
+          builder: (context, state) {
+            return Column(
+              children: [
+                const SizedBox(height: 30),
+                Text(
+                  'OTP sent to ${widget.phone}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 20),
 
-            const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(6, (index) {
+                    return SizedBox(
+                      width: 45,
+                      child: TextField(
+                        controller: controllers[index],
+                        focusNode: focusNodes[index],
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        maxLength: 1,
+                        decoration: const InputDecoration(counterText: ''),
+                        onChanged: (value) {
+                          if (value.isNotEmpty && index < 5) {
+                            focusNodes[index + 1].requestFocus();
+                          }
+                        },
+                      ),
+                    );
+                  }),
+                ),
 
-            Text(
-              _seconds > 0 ? 'Resend OTP in $_seconds sec' : 'Resend OTP',
-              style: const TextStyle(color: Colors.grey),
-            ),
+                const SizedBox(height: 20),
 
-            const Spacer(),
+                secondsLeft > 0
+                    ? Text('Resend OTP in $secondsLeft sec')
+                    : TextButton(
+                        onPressed: () {
+                          startTimer();
+                          context.read<AuthBloc>().add(SendOtp(widget.phone));
+                        },
+                        child: const Text('Resend OTP'),
+                      ),
 
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isOtpComplete
-                    ? () {
-                        // MOCK OTP: accept any 6 digits
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const LoggedInPlaceholder(),
-                          ),
-                        );
-                      }
-                    : null,
-                child: const Text('Verify'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+                const SizedBox(height: 20),
 
-/// Temporary post-login screen
-class LoggedInPlaceholder extends StatelessWidget {
-  const LoggedInPlaceholder({super.key});
+                state is AuthLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                        onPressed: () {
+                          final enteredOtp = controllers
+                              .map((c) => c.text)
+                              .join();
 
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text(
-          'Login Successful 🎉',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                          if (enteredOtp.length != 6) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please enter 6-digit OTP'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          context.read<AuthBloc>().add(VerifyOtp(enteredOtp));
+                        },
+                        child: const Text('Verify OTP'),
+                      ),
+              ],
+            );
+          },
         ),
       ),
     );

@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loan_ease/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:loan_ease/features/auth/presentation/bloc/auth_event.dart';
+import 'package:loan_ease/features/auth/presentation/bloc/auth_state.dart';
+
 import 'otp_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -40,21 +45,38 @@ class _LoginPageState extends State<LoginPage> {
                 },
               ),
               const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => OtpPage(phone: _controller.text),
-                        ),
-                      );
-                    }
-                  },
-                  child: const Text('Send OTP'),
-                ),
+
+              BlocConsumer<AuthBloc, AuthState>(
+                listener: (context, state) {
+                  if (state is OtpSent) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => OtpPage(phone: state.phone),
+                      ),
+                    );
+                  }
+                },
+                builder: (context, state) {
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: state is AuthLoading
+                        ? const CircularProgressIndicator()
+                        : SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  context.read<AuthBloc>().add(
+                                    SendOtp(_controller.text),
+                                  );
+                                }
+                              },
+                              child: const Text('Send OTP'),
+                            ),
+                          ),
+                  );
+                },
               ),
             ],
           ),
