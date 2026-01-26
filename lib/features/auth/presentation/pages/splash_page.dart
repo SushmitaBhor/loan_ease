@@ -5,6 +5,7 @@ import 'package:loan_ease/features/auth/presentation/bloc/auth_event.dart';
 import 'package:loan_ease/features/auth/presentation/bloc/auth_state.dart';
 import 'package:loan_ease/features/auth/presentation/pages/dashboard_page.dart';
 import 'package:loan_ease/features/auth/presentation/pages/login_page.dart';
+import 'package:loan_ease/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -61,7 +62,12 @@ class _SplashPageState extends State<SplashPage>
         if (state is Authenticated) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const DashboardPage()),
+            MaterialPageRoute(
+              builder: (_) => BlocProvider(
+                create: (_) => DashboardBloc(),
+                child: const DashboardPage(),
+              ),
+            ),
           );
         }
 

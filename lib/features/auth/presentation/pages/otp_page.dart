@@ -5,6 +5,7 @@ import 'package:loan_ease/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:loan_ease/features/auth/presentation/bloc/auth_event.dart';
 import 'package:loan_ease/features/auth/presentation/bloc/auth_state.dart';
 import 'package:loan_ease/features/auth/presentation/pages/dashboard_page.dart';
+import 'package:loan_ease/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 
 class OtpPage extends StatefulWidget {
   final String phone;
@@ -72,7 +73,12 @@ class _OtpPageState extends State<OtpPage> {
             if (state is Authenticated) {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (_) => const DashboardPage()),
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider(
+                    create: (_) => DashboardBloc(),
+                    child: const DashboardPage(),
+                  ),
+                ),
               );
             }
 
