@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loan_ease/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:loan_ease/features/auth/presentation/bloc/auth_event.dart';
 import 'package:loan_ease/features/auth/presentation/bloc/auth_state.dart';
 import 'package:loan_ease/features/auth/presentation/pages/dashboard_page.dart';
 import 'package:loan_ease/features/auth/presentation/pages/login_page.dart';
@@ -39,12 +40,11 @@ class _SplashPageState extends State<SplashPage>
 
     _controller.forward();
 
-    // Navigate after animation
-    Future.delayed(const Duration(seconds: 2), () {
-      // TODO: Replace with Auth check
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage()));
+    // 🔥 Assignment-compliant session check
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        context.read<AuthBloc>().add(CheckSession());
+      }
     });
   }
 
