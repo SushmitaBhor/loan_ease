@@ -60,7 +60,7 @@ class _SplashPageState extends State<SplashPage>
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is Authenticated) {
-          Navigator.pushReplacement(
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
               builder: (_) => BlocProvider(
@@ -68,6 +68,7 @@ class _SplashPageState extends State<SplashPage>
                 child: const DashboardPage(),
               ),
             ),
+            (route) => false,
           );
         }
 

@@ -46,5 +46,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(Authenticated());
       }
     });
+
+    on<Logout>((event, emit) async {
+      emit(AuthLoading());
+      await SecureStorage.setLoggedIn(false);
+      emit(Unauthenticated());
+    });
   }
 }

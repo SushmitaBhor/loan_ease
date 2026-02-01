@@ -71,7 +71,7 @@ class _OtpPageState extends State<OtpPage> {
         child: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {
             if (state is Authenticated) {
-              Navigator.pushReplacement(
+              Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(
                   builder: (_) => BlocProvider(
@@ -79,6 +79,7 @@ class _OtpPageState extends State<OtpPage> {
                     child: const DashboardPage(),
                   ),
                 ),
+                (route) => false,
               );
             }
 
