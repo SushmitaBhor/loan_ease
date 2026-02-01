@@ -20,12 +20,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(OtpSent(event.phone, _resendCounter));
     });
     on<CheckSession>((event, emit) async {
-      print('🔥 CheckSession triggered');
-
       emit(AuthLoading());
 
       final isLoggedIn = await SecureStorage.isLoggedIn();
-      print('🔐 isLoggedIn = $isLoggedIn');
 
       if (isLoggedIn) {
         emit(Authenticated());
